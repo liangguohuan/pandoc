@@ -1,0 +1,178 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Try pandoc!</title>
+  <script src="/jquery-1.11.0.min.js"></script>
+  <script src="/bootstrap.min.js"></script>
+  <script src="/ZeroClipboard.js"></script>
+  <link href="/bootstrap.min.css" rel="stylesheet">
+  <link rel="shortcut icon" href="http://johnmacfarlane.net/favicon.ico" />
+  <style type="text/css">
+  h1 { margin-bottom: 1em; }
+  body { margin: auto; }
+  textarea { height: 450px !important; width: 100%; font-family: monospace; margin-top: 15px; }
+  div.alert { margin: 1em; }
+  h3 { margin-top: 0; margin-bottom: 0; padding: 0; font-size: 100%; }
+  pre#results { width: 100%; margin-top: 15px; }
+  footer { color: #555; text-align: center; margin: 1em; }
+  p.version { color: #555; }
+  button#convert { vertical-align: bottom; }
+  #results { max-height: 450px; overflow: hidden; overflow-y: auto; }
+  #convert { margin-bottom:2px; margin-right:3px; }
+  .divtext { 
+      margin-top: 15px; color: #333; background-color: #fff; 
+      border: 1px solid #ccc; padding: 10px; height: 450px; 
+      overflow: hidden; overflow-y: auto; 
+  }
+  </style>
+  <script type="text/javascript">
+(function($) { // http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values
+	$.QueryString = (function(a) {
+	    if (a == "") return {};
+	    var b = {};
+	    for (var i = 0; i < a.length; ++i)
+	    {
+		var p=a[i].split('=');
+		if (p.length != 2) continue;
+		b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
+	    }
+	    return b;
+        })(window.location.search.substr(1).split('&'))
+})(jQuery);
+
+function process(res) {
+  $("#results").text(res.result);
+  $("#version").text(res.version);
+}
+
+//----------- 复制处理开始 -----------------
+var clip = null;  
+function clip_init() {
+    clip = new ZeroClipboard.Client();
+    clip.setHandCursor(true);  	
+    clip.addEventListener('mouseOver', function (client) {
+        // update the text on mouse over
+        clip.setText( $('#results').html() );
+    });
+    /*
+    clip.addEventListener('complete', function (client, text) {
+        //debugstr("Copied text to clipboard: " + text );
+        alert("该地址已经复制，你可以使用Ctrl+V 粘贴。");
+    });
+    */
+    clip.glue('copybtn');
+}
+
+//----------- 复制处理结束 --------------------
+
+$(document).ready(function() {
+  clip_init(); //复制初始化
+  $('#convert').bind('click', function(){
+      var input = $('#text').get(0).tagName == 'TEXTAREA' ? $("#text").val() : $('#text').html();
+      var from  = $("#from").val();
+      var to    = $("#to").val();
+      $.post('./action.php', {from: from, to: to, text: input}, function(json){
+                $('#results').empty();
+                $('#results').append(json.text);
+              }, 'json');
+  });
+  $('#swap').bind('click', function(){
+        
+      if( $('#text').get(0).tagName == 'DIV' ) {
+        $('#text').remove();
+        $('.col-md-6').first().append('<textarea id="text" rows="15" class="form-control"></textarea>');
+      } else {
+        $('#text').remove();
+        $('.col-md-6').first().append('<div id="text" class="divtext form-control" contenteditable="true"></div>');
+      }
+  });
+  $('#clean').bind('click', function(){
+      $('#text').empty();
+  });
+});
+  </script>
+</head>
+<body>
+<div class="container">
+  <div class="row">
+    <h1>Try <a href="http://johnmacfarlane.net/pandoc/">pandoc</a>!</h1>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <label for="from">
+      from
+      </label>
+      <select id="from">
+        <option value="html" selected>HTML</option>
+        <option value="markdown">Markdown</option>
+        <option value="markdown_strict">Markdown/strict</option>
+        <option value="markdown_phpextra">PHP Markdown Extra</option>
+        <option value="markdown_github">Github Markdown</option>
+        <option value="markdown_mmd">MultiMarkdown</option>
+        <option value="rst">reStructuredText</option>
+        <option value="textile">Textile</option>
+        <option value="latex">LaTeX</option>
+        <option value="docbook">DocBook</option>
+        <option value="opml">OPML</option>
+        <option value="org">Emacs Org Mode</option>
+        <option value="t2t">Txt2Tags</option>
+        <option value="mediawiki">MediaWiki</option>
+        <option value="haddock">Haddock markup</option>
+      </select>
+      &nbsp;
+      <button class="btn btn-primary btn-xs" id="swap">Swap</button>
+      <button class="btn btn-primary btn-xs" id="clean">Clean</button>
+
+      <br/>
+      <!-- <textarea id="text" rows="15" class="form-control"></textarea> -->
+      <div id="text" class="divtext form-control" contenteditable="true"></div>
+    </div>
+    <div class="col-md-6">
+      <label for="to">
+      to
+      </label>
+      <select id="to">
+        <option value="html">HTML</option>
+        <option value="html5">HTML 5</option>
+        <option value="markdown">Markdown</option>
+        <option value="markdown_strict">Markdown/strict</option>
+        <option value="markdown_phpextra">PHP Markdown Extra</option>
+        <option value="markdown_mmd">MultiMarkdown</option>
+        <option value="markdown_github" selected> Github Markdown</option>
+        <option value="rst">reStructuredText</option>
+        <option value="asciidoc">AsciiDoc</option>
+        <option value="textile">Textile</option>
+        <option value="mediawiki">MediaWiki</option>
+        <option value="dokuwiki">DokuWiki</option>
+        <option value="org">Emacs Org Mode</option>
+        <option value="latex">LaTeX</option>
+        <option value="beamer">LaTeX Beamer</option>
+        <option value="context">ConTeXt</option>
+        <option value="man">Groff man</option>
+        <option value="texinfo">Texinfo</option>
+        <option value="docbook">DocBook</option>
+        <option value="opml">OPML</option>
+        <option value="icml">ICML</option>
+        <option value="opendocument">OpenDocument</option>
+        <option value="rtf">RTF</option>
+        <option value="dzslides">DZSlides</option>
+        <option value="slidy">Slidy</option>
+        <option value="S5">S5</option>
+        <option value="slideous">Slideous</option>
+      </select>
+      &nbsp;
+      <button class="btn btn-primary btn-xs" id="convert">Convert</button>
+      <button class="btn btn-primary btn-xs" id="copybtn">Copy</button>
+      <br/>
+      <pre id="results"></pre>
+    </div>
+  </div>
+</div>
+<footer>
+ <p class="version">pandoc <span id="version"></span></p>
+ <p>&copy; 2013&ndash;2014 <a href="http://johnmacfarlane.net">John MacFarlane</a></p>
+</footer>
+</body>
+</html>
