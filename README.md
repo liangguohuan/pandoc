@@ -1,6 +1,6 @@
 # pandoc
 
-pandoc is a simple webapp that helps to convert html to markdown.
+pandoc is a simple webapp that helps to convert html to markdown. get help from [here](http://pandoc.org/)
 
 # requires
   - pandoc   
@@ -13,3 +13,7 @@ easy way to show:
       
       cd [pandoc]
       php -S localhost:8989
+
+
+
+![Alt text](https://github.com/liangguohuan/pandoc/blob/master/preview.png)
